@@ -3,17 +3,17 @@ CS229 Class Project
 
 To dos before Wednesday Week 6: 
 
-- [] PRAW
-  - [] Create notebook
-  - [] Shows attributes we have access to
-  - [] Sizes of datasets
-  - [] What limitations do we have on data access etc.
-- [] NLTK
-  - [] Create notebook
-  - [] What can we do with the sentiment analysis API?
-- [] Literature review 
-  - [] Read previous papers to have a sense of what has already been done
-  - [] Create Overleaf document
+- [ ] PRAW
+  - [ ] Create notebook
+  - [ ] Shows attributes we have access to
+  - [ ] Sizes of datasets
+  - [ ] What limitations do we have on data access etc.
+- [ ] NLTK
+  - [ ] Create notebook
+  - [ ] What can we do with the sentiment analysis API?
+- [ ] Literature review 
+  - [ ] Read previous papers to have a sense of what has already been done
+  - [ ] Create Overleaf document
 
 
 later:

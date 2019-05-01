@@ -2,11 +2,19 @@
 CS229 Class Project
 
 To dos before Wednesday Week 6: 
-1) Read API documentation
-2) how do we filter, and how do we tie to sentiment analysis, see Blue’s link
-3) see if you can get a first pass of data 
-4) get basic google cloud
-5) upload data and run it
-6) take a look at twitter and reddit and see how we can put it all together 
+
+- [] PRAW
+  - [] Create notebook
+  - [] Shows attributes we have access to
+  - [] Sizes of datasets
+  - [] What limitations do we have on data access etc.
+- [] NLTK
+  - [] Create notebook
+  - [] What can we do with the sentiment analysis API?
+- [] Literature review 
+  - [] Read previous papers to have a sense of what has already been done
+  - [] Create Overleaf document
+
+
+later:
 7a) clearly define the machine learning question: could be building a sentiment analyzer based off this data; take off-shelf sentiment analyzer, train classifier to predict overall sentiment would be in response to sentence within community. 
-or 7b) Someone could also get their hands on NLTK toolkits

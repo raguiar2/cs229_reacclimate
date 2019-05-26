@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8ee53a60-2d52-4eb8-ae2a-b195f927d8bf" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/cs229_reacclimate.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clustering/cluster.py" beforeDir="false" afterPath="$PROJECT_DIR$/clustering/cluster.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -18,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/clustering/cluster.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="645">
-              <caret line="47" selection-start-line="47" selection-end-line="47" />
+            <state relative-caret-position="570">
+              <caret line="38" column="40" selection-start-line="38" selection-start-column="40" selection-end-line="38" selection-end-column="40" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -40,9 +38,9 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="436" />
-    <option name="y" value="23" />
-    <option name="width" value="1061" />
+    <option name="x" value="27" />
+    <option name="y" value="24" />
+    <option name="width" value="1443" />
     <option name="height" value="979" />
   </component>
   <component name="ProjectView">
@@ -112,14 +110,14 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2302000" />
+    <option name="totallyTimeSpent" value="2517000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="436" y="23" width="1061" height="979" extended-state="0" />
+    <frame x="27" y="24" width="1443" height="979" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24926399" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18129908" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" />
@@ -147,8 +145,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/clustering/cluster.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="645">
-          <caret line="47" selection-start-line="47" selection-end-line="47" />
+        <state relative-caret-position="570">
+          <caret line="38" column="40" selection-start-line="38" selection-start-column="40" selection-end-line="38" selection-end-column="40" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

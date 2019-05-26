@@ -1,17 +1,19 @@
 import numpy as np
 import csv
 import os
+from collections import defaultdict
 from sklearn.cluster import KMeans
 
 OUTPUT_CSV = 'clusters.csv'
 
 def get_users_to_data(csvs):
     users_to_data = {}
+    users_to_count = defaultdict(int)
     for csv_file in csvs:
         with open(csv_file, "r") as f:
             reader = csv.reader(f, delimiter=",")
             for i, line in enumerate(reader):
-                if i ==0:
+                if i == 0:
                     screen_name_idx = line.index('screen_name')
                     polarity_idx = line.index('polarity')
                     subjectivity_idx = line.index('subjectivity')
@@ -25,9 +27,12 @@ def get_users_to_data(csvs):
                     if screen_name in users_to_data:
                         old_polarity, old_subjectivity, lat, lon = users_to_data[screen_name]
                         # running avg of polarity and subjectivity
-                        polarity = (float(old_polarity) + float(polarity))/2
-                        subjectivity = (float(old_subjectivity) + float(subjectivity)) / 2
+                        polarity = (float(old_polarity) + float(polarity))
+                        subjectivity = (float(old_subjectivity) + float(subjectivity))
                     users_to_data[screen_name] = np.array([float(polarity), float(subjectivity), 0, 0])
+                    users_to_count[screen_name] += 1
+    for key in users_to_data:
+        users_to_data[key][0] /= users_to_count[key]
     return users_to_data
 
 def cluster_users(user_tuples):

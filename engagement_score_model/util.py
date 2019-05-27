@@ -89,7 +89,7 @@ def construct_engagement_score_ds( tweetFile, userFile ):
 
     tweetDf = pd.read_csv( tweetFile )
     userDf = pd.read_csv( userFile )
- 
+
     #Add user group assignment to tweet Df
     tweetDf = pd.merge( tweetDf, userDf, how='inner', on=userNameCol )
     
@@ -101,19 +101,20 @@ def construct_engagement_score_ds( tweetFile, userFile ):
         if tweet.shape[0] == 0:
             print( 'Invalid parent ID %s, continue', pId )
             continue
-        parentFollower = tweet['follower_count'].values[0]
+        parentFollower = tweet['follower_count'].values[0]+1
         curTweetEntry.append( tweet['clean_text'].values[0] ) 
         replyDf = tweetDf[tweetDf[parentIdCol]==pId]
-        replyDf[egmtCol] = (( replyDf['favorite_count'] +
-                replyDf['retweet_count'] ) * replyDf['polarity'] / 
-                parentFollower ).values[0]
+        #Shifting to polarity to [0 to 2]
+        replyDf.loc[:,egmtCol] = np.log((( replyDf['favorite_count'] +
+                replyDf['retweet_count'] + 1) * ( replyDf['polarity'] + 1 ) / 
+                parentFollower ).values[0] + 1E-15)
 
         for grp in sorted(userDf[usrGrpCol].unique()):
             if grp in replyDf[usrGrpCol].values:
                 curTweetEntry.append( replyDf[replyDf[usrGrpCol]==grp]
                         [egmtCol].mean() )
             else:
-                curTweetEntry.append( 0 )
+                curTweetEntry.append( -15 )
         engagementDf.append( curTweetEntry )
 
     engagementDf = pd.DataFrame( engagementDf )
@@ -121,10 +122,12 @@ def construct_engagement_score_ds( tweetFile, userFile ):
     return engagementDf
 
 def convert_to_categorical( thresholds, tarCol, df ):
+    catDf = df.copy()
     for i in range(1,len(thresholds)):
         idx = (df[tarCol] < thresholds[i]) & (
                 df[tarCol] >= thresholds[i-1])
-        df.loc[idx,tarCol] = i-1
+        catDf.loc[idx,tarCol] = i-1
+    return catDf
 
 
 

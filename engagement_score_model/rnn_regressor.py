@@ -27,7 +27,7 @@ tPath = '../twitter/data/'
 trainFile = 'harold.csv'
 testFile = 'harold.csv'
 valFile = 'harold.csv'
-tweetFile = '../twitter/data/harold.csv'
+tweetFile = '../twitter/data/test.csv'
 userFile = '../clustering/clusters.csv'
 oFile = './engagement.csv'
 
@@ -40,10 +40,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 tarUsrGrp = 0
 engagementDf = util.construct_engagement_score_ds(tweetFile, userFile)
-pdb.set_trace()
-util.convert_to_categorical( [-999999, -0.2, 0.2, 999999], tarUsrGrp, 
-        engagementDf )
-engagementDf.to_csv(oFile, index='False')
+engagementDf = util.convert_to_categorical( [-999999, -13, -6, 999999], 
+        tarUsrGrp, engagementDf )
+engagementDf.to_csv(oFile, index=False)
 
 csvFields = [   ('text', TEXT), #clean_text
                 ('label', LABEL),
@@ -59,7 +58,6 @@ train_data, valid_data, test_data = data.TabularDataset.splits(
                 fields=csvFields,
                 skip_header=True,
             )
-
 TEXT.build_vocab(train_data, 
                  max_size = MAX_VOCAB_SIZE, 
                  vectors = "glove.6B.100d", 

@@ -30,6 +30,7 @@ valFile = 'harold.csv'
 tweetFile = '../twitter/data/test.csv'
 userFile = '../clustering/clusters.csv'
 oFile = './engagement.csv'
+weight_path = 'lstm_model.pt'
 
 torch.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
@@ -84,6 +85,7 @@ UNK_IDX = TEXT.vocab.stoi[TEXT.unk_token]
 model.embedding.weight.data[UNK_IDX] = torch.zeros(EMBEDDING_DIM)
 model.embedding.weight.data[PAD_IDX] = torch.zeros(EMBEDDING_DIM)
 optimizer = optim.Adam(model.parameters())
+# Should we use L1Loss or SmoothL1Loss? How do we feel about outliers? 
 criterion = nn.MSELoss()
 
 model = model.to(device)
@@ -107,15 +109,15 @@ for epoch in range(N_EPOCHS):
     
     if valid_loss < best_valid_loss:
         best_valid_loss = valid_loss
-        torch.save(model.state_dict(), 'lstm_model.pt')
+        torch.save(model.state_dict(), weight_path)
     
     print(f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
     print(f'\tTrain Loss: {train_loss:.3f} | Train Acc: {train_acc*100:.2f}%')
     print(f'\t Val. Loss: {valid_loss:.3f} |  Val. Acc: {valid_acc*100:.2f}%')
 
-model.load_state_dict(torch.load('lstm_model.pt'))
+model.load_state_dict(torch.load(weight_path))
 test_loss, test_acc = util.evaluate(model, test_iterator, criterion)
 print(f'Test Loss: {test_loss:.3f} | Test Acc: {test_acc*100:.2f}%')
 
-util.predict_engagement(model, "This film is terrible", TEXT, device)
-util.predict_engagement(model, "This film is great", TEXT, device)
+util.predict_engagement(model, "There is a climate crisis!", TEXT, device)
+util.predict_engagement(model, "There is a climate issue", TEXT, device)

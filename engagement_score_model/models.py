@@ -26,6 +26,7 @@ class LTSM(nn.Module):
         packed_output, (hidden, cell) = self.rnn(packed_embedded)
         
         #unpack sequence
+        # TODO: are we using this? 
         output, output_lengths = nn.utils.rnn.pad_packed_sequence(packed_output)
 
         #output = [sent len, batch size, hid dim * num directions]

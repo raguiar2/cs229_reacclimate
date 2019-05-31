@@ -12,7 +12,6 @@ def binary_accuracy(preds, y):
     """
     Returns accuracy per batch, i.e. if you get 8/10 right, this returns 0.8, NOT 8
     """
-    #round predictions to the closest integer
     rounded_preds = torch.round(torch.sigmoid(preds))
     correct = (rounded_preds == y).float() #convert into float for division 
     acc = correct.sum() / len(correct)
@@ -104,7 +103,7 @@ def construct_engagement_score_ds( tweetFile, userFile ):
         parentFollower = tweet['follower_count'].values[0]+1
         curTweetEntry.append( tweet['clean_text'].values[0] ) 
         replyDf = tweetDf[tweetDf[parentIdCol]==pId]
-        #Shifting to polarity to [0 to 2]
+        #Shifting to polarity to [0 to 2] TODO: why aren't we using the continous value as a feature? 
         replyDf.loc[:,egmtCol] = np.log((( replyDf['favorite_count'] +
                 replyDf['retweet_count'] + 1) * ( replyDf['polarity'] + 1 ) / 
                 parentFollower ).values[0] + 1E-15)
@@ -114,6 +113,7 @@ def construct_engagement_score_ds( tweetFile, userFile ):
                 curTweetEntry.append( replyDf[replyDf[usrGrpCol]==grp]
                         [egmtCol].mean() )
             else:
+                # What is this -15? 
                 curTweetEntry.append( -15 )
         engagementDf.append( curTweetEntry )
 

@@ -1,5 +1,6 @@
 import torch
 import random
+import pandas as pd
 from torchtext import data
 import torch.nn as nn
 import torch.optim as optim
@@ -21,39 +22,37 @@ OUTPUT_DIM = 1
 N_LAYERS = 2
 BIDIRECTIONAL = True
 DROPOUT = 0.5
-N_EPOCHS = 50
+N_EPOCHS = 30
 best_valid_loss = float('inf')
 tPath = '../twitter/data/'
-trainFile = 'harold.csv'
-testFile = 'harold.csv'
-valFile = 'harold.csv'
-tweetFile = '../twitter/data/test.csv'
-userFile = '../clustering/clusters.csv'
-oFile = './engagement.csv'
+trainFile = './train.csv'
+testFile = './test.csv'
+valFile = './val.csv'
+
+df = pd.read_csv(valFile)
+usrGrpCnt = len(df.columns) - 1
+sentCategoryCnt = len(df[df.columns[-1]].unique())
+labelName = 'group1'
 
 torch.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
 
 TEXT = data.Field(tokenize = 'spacy', include_lengths = True, lower=True)
-LABEL = data.LabelField(dtype = torch.float)
+LABEL = data.LabelField(dtype = torch.long)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-tarUsrGrp = 0
-engagementDf = util.construct_engagement_score_ds(tweetFile, userFile)
-engagementDf = util.convert_to_categorical( [-999999, -13, -6, 999999], 
-        tarUsrGrp, engagementDf )
-engagementDf.to_csv(oFile, index=False)
-
-csvFields = [   ('text', TEXT), #clean_text
-                ('label', LABEL),
-                ('grp1', None),
-            ]
+csvFields = [   ('text', TEXT) ]
+labelFields = ['group0']
+for userGrp in range( usrGrpCnt ):
+    label = 'group%s' % userGrp
+    csvFields.append( ( label, LABEL ) )
+#    labelFields.append( label )
 
 train_data, valid_data, test_data = data.TabularDataset.splits(
                 path='.', 
-                train=oFile,
-                validation=oFile, 
-                test=oFile, 
+                train=trainFile,
+                validation=valFile, 
+                test=testFile, 
                 format='csv',
                 fields=csvFields,
                 skip_header=True,
@@ -72,10 +71,14 @@ train_iterator, valid_iterator, test_iterator = data.Iterator.splits(
     sort_within_batch = True,
     device = device)
 
+#train_dl = util.BatchWrapper(train_iterator, 'text', labelFields )
+#valid_dl = util.BatchWrapper(valid_iterator, 'text', labelFields )
+#test_dl = util.BatchWrapper(test_iterator, 'text', labelFields)
+
 INPUT_DIM = len(TEXT.vocab)
 PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token]
 
-model = LTSM(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, 
+model = LTSM(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, 1*sentCategoryCnt, 
             N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX)
 
 pretrained_embeddings = TEXT.vocab.vectors
@@ -84,7 +87,7 @@ UNK_IDX = TEXT.vocab.stoi[TEXT.unk_token]
 model.embedding.weight.data[UNK_IDX] = torch.zeros(EMBEDDING_DIM)
 model.embedding.weight.data[PAD_IDX] = torch.zeros(EMBEDDING_DIM)
 optimizer = optim.Adam(model.parameters())
-criterion = nn.MSELoss()
+criterion = nn.CrossEntropyLoss()
 
 model = model.to(device)
 criterion = criterion.to(device)
@@ -98,9 +101,9 @@ for epoch in range(N_EPOCHS):
     start_time = time.time()
     
     train_loss, train_acc = util.train(model, train_iterator, 
-            optimizer, criterion)
+            optimizer, criterion, labelName)
     valid_loss, valid_acc = util.evaluate(model, valid_iterator,
-            criterion)
+            criterion, labelName)
     
     end_time = time.time()
     epoch_mins, epoch_secs = util.epoch_time(start_time, end_time)
@@ -114,8 +117,8 @@ for epoch in range(N_EPOCHS):
     print(f'\t Val. Loss: {valid_loss:.3f} |  Val. Acc: {valid_acc*100:.2f}%')
 
 model.load_state_dict(torch.load('lstm_model.pt'))
-test_loss, test_acc = util.evaluate(model, test_iterator, criterion)
+test_loss, test_acc = util.evaluate(model, test_iterator, criterion, labelName)
 print(f'Test Loss: {test_loss:.3f} | Test Acc: {test_acc*100:.2f}%')
 
-util.predict_engagement(model, "This film is terrible", TEXT, device)
-util.predict_engagement(model, "This film is great", TEXT, device)
+util.predict_engagement(model, 'Climate change is terrible', TEXT, device)
+util.predict_engagement(model, 'We need to act now to fix climate change', TEXT, device)

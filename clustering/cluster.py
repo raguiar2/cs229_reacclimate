@@ -36,7 +36,8 @@ def get_users_to_data(csvs):
     return users_to_data
 
 def cluster_users(user_tuples):
-    kmeans = KMeans(n_clusters=2, random_state=0).fit(user_tuples)
+    polarity = np.array([tuple[0] for tuple in user_tuples])
+    kmeans = KMeans(n_clusters=2, random_state=0).fit(polarity.reshape(-1, 1))
     return kmeans
 
 def main():

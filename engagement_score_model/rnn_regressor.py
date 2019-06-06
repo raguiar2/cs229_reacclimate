@@ -97,24 +97,24 @@ print('The model has %s trainable parameters' %
 print(pretrained_embeddings.shape)
 print(model.embedding.weight.data)
 
-for epoch in range(N_EPOCHS):
-    start_time = time.time()
+# for epoch in range(N_EPOCHS):
+#     start_time = time.time()
     
-    train_loss, train_acc = util.train(model, train_iterator, 
-            optimizer, criterion, labelName)
-    valid_loss, valid_acc = util.evaluate(model, valid_iterator,
-            criterion, labelName)
+#     train_loss, train_acc = util.train(model, train_iterator, 
+#             optimizer, criterion, labelName)
+#     valid_loss, valid_acc = util.evaluate(model, valid_iterator,
+#             criterion, labelName)
     
-    end_time = time.time()
-    epoch_mins, epoch_secs = util.epoch_time(start_time, end_time)
+#     end_time = time.time()
+#     epoch_mins, epoch_secs = util.epoch_time(start_time, end_time)
     
-    if valid_loss < best_valid_loss:
-        best_valid_loss = valid_loss
-        torch.save(model.state_dict(), 'lstm_model.pt')
+#     if valid_loss < best_valid_loss:
+#         best_valid_loss = valid_loss
+#         torch.save(model.state_dict(), 'lstm_model.pt')
     
-    print(f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
-    print(f'\tTrain Loss: {train_loss:.3f} | Train Acc: {train_acc*100:.2f}%')
-    print(f'\t Val. Loss: {valid_loss:.3f} |  Val. Acc: {valid_acc*100:.2f}%')
+#     print(f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
+#     print(f'\tTrain Loss: {train_loss:.3f} | Train Acc: {train_acc*100:.2f}%')
+#     print(f'\t Val. Loss: {valid_loss:.3f} |  Val. Acc: {valid_acc*100:.2f}%')
 
 model.load_state_dict(torch.load('lstm_model.pt'))
 test_loss, test_acc = util.evaluate(model, test_iterator, criterion, labelName)

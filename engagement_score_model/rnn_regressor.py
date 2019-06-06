@@ -32,7 +32,8 @@ valFile = './val.csv'
 df = pd.read_csv(valFile)
 usrGrpCnt = len(df.columns) - 1
 sentCategoryCnt = len(df[df.columns[-1]].unique())
-labelName = 'group1'
+labelName = 'group0'
+modelName = 'lstm_model_%s.pt' % labelName
 
 torch.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
@@ -110,13 +111,13 @@ for epoch in range(N_EPOCHS):
     
     if valid_loss < best_valid_loss:
         best_valid_loss = valid_loss
-        torch.save(model.state_dict(), 'lstm_model.pt')
+        torch.save(model.state_dict(), modelName )
     
     print(f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
     print(f'\tTrain Loss: {train_loss:.3f} | Train Acc: {train_acc*100:.2f}%')
     print(f'\t Val. Loss: {valid_loss:.3f} |  Val. Acc: {valid_acc*100:.2f}%')
 
-model.load_state_dict(torch.load('lstm_model.pt'))
+model.load_state_dict(torch.load( modelName ))
 test_loss, test_acc = util.evaluate(model, test_iterator, criterion, labelName)
 print(f'Test Loss: {test_loss:.3f} | Test Acc: {test_acc*100:.2f}%')
 

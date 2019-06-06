@@ -73,7 +73,7 @@ def predict_engagement(model, sentence, TEXT, device):
     length_tensor = torch.LongTensor(length)
     preds = model(tensor, length_tensor)
     preds = torch.argmax(torch.softmax(preds,dim=0))
-    print( preds )
+    return preds
 
 class BatchWrapper:
     def __init__(self, dl, x_var, y_vars):

@@ -15,7 +15,6 @@ from nltk.corpus import stopwords
 from nltk.corpus import wordnet 
 from collections import defaultdict, namedtuple
 
-
 ######################################################
 #Hyperparameters and config variables
 ######################################################
@@ -73,16 +72,18 @@ modelGrp0 = LTSM(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, 1*sentCategoryCnt,
 modelGrp1 = LTSM(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, 1*sentCategoryCnt, 
             N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX)
 
-modelGrp0 = modelGrp0.to(device)
-modelGrp1 = modelGrp1.to(device)
+model_group_zero = modelGrp0.to(device)
+model_group_one = modelGrp1.to(device)
 
-modelGrp0.load_state_dict(torch.load('lstm_model_group0.pt'))
-modelGrp1.load_state_dict(torch.load('lstm_model_group1.pt'))
+model_group_zero.load_state_dict(torch.load('lstm_model_group0.pt'))
+model_group_one.load_state_dict(torch.load('lstm_model_group1.pt'))
 
-print(util.predict_engagement(modelGrp0, 'Climate change is terrible', TEXT, device))
-print(util.predict_engagement(modelGrp1, 'We need to act now to fix climate change', TEXT, device))
+print("example engagement scores:")
+first_ex_engagement = util.predict_engagement(model_group_zero, 'Climate change is terrible', TEXT, device).item()
+second_ex_engagement = util.predict_engagement(model_group_one, 'We need to act now to fix climate change', TEXT, device).item()
+print('"Climate change is terrible": ', first_ex_engagement)
+print('"We need to act now to fix climate change": ', second_ex_engagement)
 
-'''
 # iterate through words in a unique corpus dictionary
 unique_words = set()
 word_to_tweets = defaultdict(list)
@@ -95,11 +96,9 @@ tweets = tweets[:3]
 
 for tweet_idx, tweet in enumerate(tweets):
     filtered_words = [word for word in tweet.split(' ') if word not in stopwords.words('english')]
-    group_one_engagement = 0
-    group_zero_engagement = 1
     # TODO: replace with model here
-#     group_one_engagement = util.predict_engagement(model_group_one, tweet, TEXT, device)
-#     group_zero_engagement = util.predict_engagement(model_group_zero, tweet, TEXT, device)
+    group_one_engagement = util.predict_engagement(model_group_one, tweet, TEXT, device).item()
+    group_zero_engagement = util.predict_engagement(model_group_zero, tweet, TEXT, device).item()
     for word in filtered_words:
         tweet_to_engagement[word].append((group_zero_engagement, group_one_engagement))
 
@@ -127,11 +126,9 @@ for word in unique_words:
             tweet = tweets[tweet_idx]
             alt_tweet = tweet.replace(word, alt)
             # recompute engagement score delta across all user groups
-            group_one_engagement = 0
-            group_zero_engagement = 1
             # TODO: replace with model here
-            #group_one_engagement = util.predict_engagement(model_group_one, alt_tweet, TEXT, device)
-            #group_zero_engagement = util.predict_engagement(model_group_zero, alt_tweet, TEXT, device)
+            group_one_engagement = util.predict_engagement(model_group_one, alt_tweet, TEXT, device).item()
+            group_zero_engagement = util.predict_engagement(model_group_zero, alt_tweet, TEXT, device).item()
             alt_tweet_to_engagement[word][alt].append((group_one_engagement, group_zero_engagement))
 # record alt with highest delta
 replacements = []
@@ -146,15 +143,9 @@ for word in tweet_to_engagement:
         replacements.append(Replacement(delta, word, alt_word))
 replacements.sort(key=lambda x: x.delta)
 # record top 10 words with highest delta and that is our answer
-print(replacements[-10:])
-
-'''
-# In[88]:
-
-
-
-
-
+print("top 20 words and replacements are")
+for replacement in replacements[-20:]:
+    print("delta: {}, originial: {}, new: {}".format(replacement.delta, replacement.original, replacement.alt))# In[88]:
 # In[89]:
 
 

@@ -79,6 +79,7 @@ train_iterator, valid_iterator, test_iterator = data.Iterator.splits(
 INPUT_DIM = len(TEXT.vocab)
 PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token]
 
+print( MAX_VOCAB_SIZE, EMBEDDING_DIM, HIDDEN_DIM, sentCategoryCnt, N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX )
 model = LTSM(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, 1*sentCategoryCnt, 
             N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX)
 
@@ -109,9 +110,9 @@ for epoch in range(N_EPOCHS):
     end_time = time.time()
     epoch_mins, epoch_secs = util.epoch_time(start_time, end_time)
     
-    if valid_loss < best_valid_loss:
-        best_valid_loss = valid_loss
-        torch.save(model.state_dict(), modelName )
+   if valid_loss < best_valid_loss:
+       best_valid_loss = valid_loss
+       torch.save(model.state_dict(), modelName )
     
     print(f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
     print(f'\tTrain Loss: {train_loss:.3f} | Train Acc: {train_acc*100:.2f}%')

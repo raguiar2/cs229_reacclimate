@@ -25,14 +25,14 @@ from collections import defaultdict, namedtuple
 
 
 SEED = 1234
-MAX_VOCAB_SIZE = 25_000
-BATCH_SIZE = 64 * 32
+MAX_VOCAB_SIZE = 10_000
+BATCH_SIZE = 64 * 64
 EMBEDDING_DIM = 50
-HIDDEN_DIM = int(256 / 4)
+HIDDEN_DIM = int(256/8)
 N_LAYERS = 2
 BIDIRECTIONAL = True
 DROPOUT = 0.5
-N_EPOCHS = 300
+N_EPOCHS = 10
 best_valid_loss = float('inf')
 tPath = '../twitter/data/'
 trainFile = './train.csv'
@@ -71,7 +71,7 @@ TEXT.build_vocab(train_data,
                  vectors = "glove.twitter.27B.50d", 
                  unk_init = torch.Tensor.normal_)
 
-INPUT_DIM = 25002
+INPUT_DIM = 10002
 PAD_IDX = 1
 modelGrp0 = LTSM(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, output_dim, 
             N_LAYERS, BIDIRECTIONAL, DROPOUT, PAD_IDX)
@@ -89,17 +89,18 @@ model_group_zero.load_state_dict(torch.load('lstm_model_group0.pt'))
 model_group_one.load_state_dict(torch.load('lstm_model_group1.pt'))
 
 
-# In[4]:
+# In[10]:
 
 
 print("example engagement scores:")
-first_ex_engagement = util.predict_engagement(model_group_zero, 'Climate change is terrible', TEXT, device).item()
-second_ex_engagement = util.predict_engagement(model_group_one, 'We need to act now to fix climate change', TEXT, device).item()
+follower_count = torch.tensor( [[0.2]] ).to(device)
+first_ex_engagement = util.predict_engagement(model_group_zero, 'Climate change is terrible', TEXT, device, follower_count).item()
+second_ex_engagement = util.predict_engagement(model_group_one, 'We need to act now to fix climate change', TEXT, device, follower_count).item()
 print('"Climate change is terrible": ', first_ex_engagement)
 print('"We need to act now to fix climate change": ', second_ex_engagement)
 
 
-# In[ ]:
+# In[11]:
 
 
 # iterate through words in a unique corpus dictionary
@@ -110,15 +111,18 @@ alt_tweet_to_engagement = defaultdict(lambda: defaultdict(list))
 
 tweet_file = pd.read_csv(testFile)
 tweets = tweet_file['clean_text']
-tweets = tweets[:420]
+followers = tweet_file['follower_count']
+tweets = tweets[:1000]
+followers = followers[:1000]
 
 inverse_box = lambda x: (x*(-0.6)+1)**(1/-0.6)
 
 print("predicting engagements")
 for tweet_idx, tweet in enumerate(tweets):
     filtered_words = [word for word in tweet.split(' ') if word not in stopwords.words('english')]
-    group_one_engagement = util.predict_engagement(model_group_one, tweet, TEXT, device).item()
-    group_zero_engagement = util.predict_engagement(model_group_zero, tweet, TEXT, device).item()
+    num_followers = torch.tensor(followers[tweet_idx]).to(device)
+    group_one_engagement = util.predict_engagement(model_group_one, tweet, TEXT, device, num_followers).item()
+    group_zero_engagement = util.predict_engagement(model_group_zero, tweet, TEXT, device, num_followers).item()
     for word in filtered_words:
         tweet_to_engagement[word].append(((group_zero_engagement), (group_one_engagement)))
 print("engagements predictsd")
@@ -149,10 +153,11 @@ for word in unique_words:
     for alt in alternatives:
         for tweet_idx in tweets_with_word:
             tweet = tweets[tweet_idx]
+            num_followers = torch.tensor(followers[tweet_idx]).to(device)
             alt_tweet = tweet.replace(word, alt)
             # recompute engagement score delta across all user groups
-            group_one_engagement = util.predict_engagement(model_group_one, alt_tweet, TEXT, device).item()
-            group_zero_engagement = util.predict_engagement(model_group_zero, alt_tweet, TEXT, device).item()
+            group_one_engagement = util.predict_engagement(model_group_one, alt_tweet, TEXT, device, num_followers).item()
+            group_zero_engagement = util.predict_engagement(model_group_zero, alt_tweet, TEXT, device, num_followers).item()
             alt_tweet_to_engagement[word][alt].append(((group_one_engagement), (group_zero_engagement)))
 print("got alts")
 # record alt with highest delta
@@ -175,10 +180,10 @@ for replacement in replacements[-20:][::-1]:
     print("delta: {}, originial: {}, new: {}".format(replacement.delta, replacement.original, replacement.alt))
 
 
-# In[28]:
+# In[ ]:
 
 
-tweet_to_engagement
+tweet_file
 
 
 # In[ ]:

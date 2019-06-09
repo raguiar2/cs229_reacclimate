@@ -63,7 +63,7 @@ def epoch_time(start_time, end_time):
     return elapsed_mins, elapsed_secs
 
 nlp = spacy.load('en')
-def predict_engagement(model, sentence, TEXT, device):
+def predict_engagement(model, sentence, TEXT, device, follower_count):
     model.eval()
     tokenized = [tok.text for tok in nlp.tokenizer(sentence)]
     indexed = [TEXT.vocab.stoi[t] for t in tokenized]
@@ -71,7 +71,7 @@ def predict_engagement(model, sentence, TEXT, device):
     tensor = torch.LongTensor(indexed).to(device)
     tensor = tensor.unsqueeze(1)
     length_tensor = torch.LongTensor(length)
-    preds = model(tensor, length_tensor)
+    preds = model(tensor, length_tensor, follower_count)
     #preds = torch.argmax(torch.softmax(preds,dim=0))
     return preds
 

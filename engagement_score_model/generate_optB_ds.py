@@ -7,27 +7,32 @@ import pdb
 # Assumes the first col of df is name
 # the rest of the cols are user group engagements
 #######################################
-def get_engagement_category_thres( df ):
+def get_engagement_category_thres( df, catCount ):
     engagements = []
-    for col in df.columns[1:]:
-        engagements += df[col].values.tolist()
-    mean = np.mean( engagements )
-    std = np.std( engagements )
-    categoryThres = [-999999, mean-0.3*std, mean+0.3+std, 999999]
-    print( 'Engagement score breakdown is %s' 
-        % categoryThres )
+    engagements = np.sort( df['engagement'] )
+
+    divIndex = [0]
+    stepSize = np.floor( engagements.shape[0] / catCount )
+    divIndex = np.arange( 0, engagements.shape[0] + 1, stepSize, dtype=np.int )
+    divIndex[-1] = engagements.shape[0] - 1
+    categoryThres = []
+    for i in range( len(divIndex) ):
+        categoryThres.append( engagements[ divIndex[ i ] ] )
+
+    print( 'Engagement score breakdown is %s' % categoryThres )
     return categoryThres
 
 def convert_to_categorical( thresholds, df ):
     catDf = df.copy()
-    for col in df.columns[1:]:
+    for col in [df.columns[-1]]:
         for i in range(1,len(thresholds)):
-            idx = (df[col] < thresholds[i]) & (
+            idx = (df[col] <= thresholds[i]) & (
                     df[col] >= thresholds[i-1])
             print( 'Col %s between %.1f and %.1f, there are '
                     '%s datapoints' % ( col, thresholds[i],
                         thresholds[i-1], np.sum( idx ) ) )
-            catDf.loc[idx,col] = i-1
+            catDf.loc[idx,col] = int(i-1)
+            catDf[col] = catDf[col].astype(int)
     return catDf
 
 ###################################
@@ -58,52 +63,17 @@ def construct_engagement_score_ds( tweetFiles, userFile ):
 
     userGrps = userDf[usrGrpCol].unique()
     print( 'User groups: %s' % userGrps )
-    pdb.set_trace()
     #Add user group assignment to tweet Df
     tweetDf = pd.merge( tweetDf, userDf, how='inner', on=userNameCol )
     print( 'tweetDf: ', tweetDf.shape )
 
-    engagementDf = []
-    grpDetails = []
+    tweetDf.loc[:,egmtCol] = ( tweetDf['favorite_count'] + 
+            tweetDf['retweet_count'] + 1 ) / np.log( 
+            tweetDf['follower_count'] + 10 )
+    
+    tweetDf = tweetDf[ [ 'clean_text', 'group', egmtCol ] ]
 
-    for pId in tweetDf[parentIdCol].dropna().unique().astype(
-            tweetDf[idCol].dtype ):
-        curTweetEntry = []
-        
-        tweet = tweetDf[tweetDf[idCol] == pId]
-        if tweet.shape[0] == 0:
-            continue
-
-        parentFollower = tweet['follower_count'].values[0]+1
-        curTweetEntry.append( tweet['clean_text'].values[0], parentFollower ) 
-        replyDf = tweetDf[tweetDf[parentIdCol]==pId]
-        # Parent follower cnt makes the distribution somewhat unpredicatble
-        replyDf.loc[:,egmtCol] = np.log(( replyDf['favorite_count'] +
-                replyDf['retweet_count'] + 1) * ( replyDf['polarity']+1.0001 ))
-        #replyDf.loc[:,egmtCol] = np.log((( replyDf['favorite_count'] +
-        #        replyDf['retweet_count'] + 1) * ( replyDf['polarity'] + 1 ) / 
-        #        parentFollower ).values[0] + 1E-15)
-        curTweetDetail = [ pId ]
-        for grp in sorted(userGrps):
-            if grp in replyDf[usrGrpCol].unique():
-                egmts = replyDf[replyDf[usrGrpCol]==grp][egmtCol]
-                curTweetEntry.append( egmts.mean() )
-                curTweetDetail.append( egmts.values )
-            else:
-                curTweetDetail.append( [] )
-                curTweetEntry.append( 0 )
-        pdb.set_trace()
-        grpDetails.append( curTweetDetail )
-        engagementDf.append( curTweetEntry )
-        if( len( engagementDf ) % 100 ) == 0:
-            print( 'Recorded %s entries' % len( engagementDf ) )
-            break
-
-    engagementDf = pd.DataFrame( engagementDf )
-    engagementDf.columns = ['text'] + sorted( userGrps ) 
-    curTweetDetail = pd.DataFrame( curTweetDetail )
-    curTweetEntry.to_csv( 'backup.csv', index=False )
-    return engagementDf
+    return tweetDf
 
 tweetFiles = [ '../data/GWUFile1.csv',
                '../data/GWUFile2.csv',
@@ -118,13 +88,12 @@ testFile = './test.csv'
 
 testRatio = 0.1
 valRatio = 0.1
+catCnt = 3
 
 engagementDf = construct_engagement_score_ds(tweetFiles, userFile)
-engagementDf.to_csv('harold.csv',index=False)
-pdb.set_trace()
-engagementDf = pd.read_csv('harold.csv')
-engagementDf = engagementDf[ (engagementDf['1'] != 0) & (engagementDf['0']!=0)]
-thresholds = get_engagement_category_thres( engagementDf )
+engagementDf.to_csv('ds_optB.csv',index=False)
+#engagementDf = pd.read_csv('ds_optB.csv')
+thresholds = get_engagement_category_thres( engagementDf, catCnt )
 engagementDf = convert_to_categorical( thresholds, engagementDf )
 engagementDf.to_csv(oFile, index=False)
 
